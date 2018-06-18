@@ -19,7 +19,6 @@ using Microsoft.Win32;
 
 namespace FileLockWPF
 {
-   
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -28,6 +27,7 @@ namespace FileLockWPF
         private ObservableCollection<ImageInfo> imageInfos;
         private FaceLockService faceLockService;
         private Guid currentGuid;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -36,6 +36,7 @@ namespace FileLockWPF
             this.faceLockService = new FaceLockService();
             Console.WriteLine("Initialized!");
         }
+
         // for this code image needs to be a project resource
         private void LoadImage(string filePath)
         {
@@ -46,11 +47,13 @@ namespace FileLockWPF
             imageInfo.Title = filePath;
             imageInfos.Add(imageInfo);
         }
+
         private void btnAddFile_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Multiselect = true;
-            openFileDialog.Filter = "Image files (*.jpg, *.jpeg, *.jpe, *.jfif, *.png) | *.jpg; *.jpeg; *.jpe; *.jfif; *.png";
+            openFileDialog.Filter =
+                "Image files (*.jpg, *.jpeg, *.jpe, *.jfif, *.png) | *.jpg; *.jpeg; *.jpe; *.jfif; *.png";
             if (openFileDialog.ShowDialog() == true)
             {
                 foreach (String filePath in openFileDialog.FileNames)
@@ -85,6 +88,7 @@ namespace FileLockWPF
         {
             return imageInfos.Select(k => k.ImagePath).ToList();
         }
+
         private void SetGuid(Guid guid)
         {
             this.currentGuid = guid;
@@ -105,12 +109,49 @@ namespace FileLockWPF
 
         private void btnDecryptFile_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            var imagePaths = GetImagePaths();
+            if (imagePaths.Count == 0)
+            {
+                showMessageBox("Error", "You must add 1 image for verification!");
+                return;
+            }
+            var image = imagePaths[0];
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Multiselect = false;
+            if (openFileDialog.ShowDialog() == true)
+            {
+                String filePath = openFileDialog.FileName;
+                if (faceLockService.DecryptFile(image, filePath).Result)
+                {
+                    showMessageBox("Sucess", "File Decrypted!");
+                }
+                else
+                {
+                    showMessageBox("Failed", "Face not match!");
+                }
+            }
+
+            return;
         }
 
         private void btnEncryptFile_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            if (PersonGuid.Text.Trim() == "")
+            {
+                showMessageBox("Failed!", "Person Guid must define ");
+                return;
+            }
+
+
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Multiselect = false;
+            if (openFileDialog.ShowDialog() == true)
+            {
+                String filePath = openFileDialog.FileName;
+                faceLockService.EncryptFile(filePath, Guid.Parse(PersonGuid.Text)).RunSynchronously();
+            }
+            showMessageBox("Sucess", "File Encrypted");
+            return;
         }
 
         private void btnVerifyPerson_Click(object sender, RoutedEventArgs e)
