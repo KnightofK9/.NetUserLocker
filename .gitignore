@@ -3,3 +3,7 @@ FileLockWPF/obj/
 FileLockWPF/packages/
 FileLockWPF/.vs/FileLockWPF/v15/Server/sqlite3/
 FileLockWPF/.vs/FileLockWPF/v15/
+/FileLockWPF/.vs/config/applicationhost.config
+/.vs/slnx.sqlite
+/.vs/ProjectSettings.json
+/.vs/IdentifyFace/v15/.suo
