@@ -34,7 +34,7 @@ namespace FileLockWPF
             if (verificationFace(imagePath, guid, Constant.GROUP_ID).Result)
             {
                 String outputPath = file.DirectoryName + "/" + file.Name.Split('_')[0];
-                encryptService.FileDecrypt(filePath, outputPath, Constant.KEY);
+                encryptService.FileDecrypt(filePath, outputPath, Constant.DECRYPT);
                 return true;
             }
             return false;
