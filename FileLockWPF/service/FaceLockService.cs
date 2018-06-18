@@ -24,7 +24,7 @@ namespace FileLockWPF
         public async Task EncryptFile(String filePath, Guid guid)
         {
             FileInfo file = new FileInfo(filePath);
-            String outputPath = file.DirectoryName + "/" + file.Name + "_" + guid.ToString() + ".aes";
+            String outputPath = file.DirectoryName + "/" + file.FullName + "_" + guid.ToString() + ".aes";
             encryptService.FileEncrypt(filePath, outputPath, Constant.DECRYPT);
         }
         public async Task<Boolean> DecryptFile(String imagePath, String filePath)
