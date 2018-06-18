@@ -24,16 +24,18 @@ namespace FileLockWPF
         public async Task EncryptFile(String filePath, Guid guid)
         {
             FileInfo file = new FileInfo(filePath);
-            String outputPath = file.DirectoryName + "/" + file.FullName + "_" + guid.ToString() + ".aes";
+            String fileName = file.FullName + "_" + guid.ToString() + ".aes";
+            String outputPath = Path.Combine(file.DirectoryName, fileName);
             encryptService.FileEncrypt(filePath, outputPath, Constant.DECRYPT);
         }
         public async Task<Boolean> DecryptFile(String imagePath, String filePath)
         {
             FileInfo file = new FileInfo(filePath);
-            Guid guid = Guid.Parse(file.Name.Split('_').Last());
-            if (verificationFace(imagePath, guid, Constant.GROUP_ID).Result)
+            string guidString = file.Name.Split('_').Last().Split('.').First();
+            Guid guid = Guid.Parse(guidString);
+            if (await verificationFace(imagePath, guid, Constant.GROUP_ID))
             {
-                String outputPath = file.DirectoryName + "/" + file.Name.Split('_')[0];
+                String outputPath = Path.Combine(file.DirectoryName , file.Name.Split('_')[0]);
                 encryptService.FileDecrypt(filePath, outputPath, Constant.DECRYPT);
                 return true;
             }
@@ -123,12 +125,13 @@ namespace FileLockWPF
 
         private async Task createGroupIfNotExists(String groupId)
         {
-            var result = await faceServiceClient.GetPersonGroupAsync(groupId);
-            if (result == null)
-            {
-                Console.WriteLine("No group, creating group now!");
-                await createGroupAsync(groupId);
-            }
+            await createGroupAsync(groupId);
+//            var result = await faceServiceClient.GetPersonGroupAsync(groupId);
+//            if (result == null)
+//            {
+//                Console.WriteLine("No group, creating group now!");
+//                await createGroupAsync(groupId);
+//            }
         }
 
         private async Task createGroupAsync(String groupId)
@@ -175,7 +178,10 @@ namespace FileLockWPF
             }
         }
 
-   
 
+        public async Task ResetTrainingAsync()
+        {
+            await this.faceServiceClient.DeletePersonGroupAsync(Constant.GROUP_ID);
+        }
     }
 }

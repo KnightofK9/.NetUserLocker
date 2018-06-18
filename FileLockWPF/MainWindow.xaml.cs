@@ -134,7 +134,7 @@ namespace FileLockWPF
             return;
         }
 
-        private void btnEncryptFile_Click(object sender, RoutedEventArgs e)
+        private async void btnEncryptFile_Click(object sender, RoutedEventArgs e)
         {
             if (PersonGuid.Text.Trim() == "")
             {
@@ -148,7 +148,11 @@ namespace FileLockWPF
             if (openFileDialog.ShowDialog() == true)
             {
                 String filePath = openFileDialog.FileName;
-                faceLockService.EncryptFile(filePath, Guid.Parse(PersonGuid.Text)).RunSynchronously();
+                await faceLockService.EncryptFile(filePath, Guid.Parse(PersonGuid.Text));
+            }
+            else
+            {
+                return;
             }
             showMessageBox("Sucess", "File Encrypted");
             return;
@@ -173,6 +177,13 @@ namespace FileLockWPF
                 }
             }
             showMessageBox("Failed", "No face match!");
+        }
+
+        private async void btnResetTraining_Click(object sender, RoutedEventArgs e)
+        {
+            await this.faceLockService.ResetTrainingAsync();
+            showMessageBox("Sucess","Traning resetted!");
+
         }
     }
 }
