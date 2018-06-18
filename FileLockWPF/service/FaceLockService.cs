@@ -46,9 +46,10 @@ namespace FileLockWPF
             await createGroupIfNotExists(personalItem.personGroupId);
             Console.WriteLine("Init group completed!");
             var result = await createPersonAsync(personalItem);
-            Console.WriteLine("Create person completed!");
             if (result != null)
             {
+                personalItem.guid = result.PersonId;
+                Console.WriteLine("Create person completed!");
                 await addPersonImageToGroup(personalItem);    
                 Console.WriteLine("Upload person image completed!");
                 await trainNetwork(Constant.GROUP_ID);
@@ -60,6 +61,30 @@ namespace FileLockWPF
             }
             return result;
 
+        }
+
+        public async Task<Guid> detectPerson(String verifyImagePath, String groupId)
+        {
+            using (Stream s = File.OpenRead(verifyImagePath))
+            {
+                var faces = await faceServiceClient.DetectAsync(s);
+                var faceIds = faces.Select(face => face.FaceId).ToArray();
+
+                var results = await faceServiceClient.IdentifyAsync(faceIds, groupId);
+                foreach (var identifyResult in results)
+                {
+                    Console.WriteLine("Result of face: {0}", identifyResult.FaceId);
+                    if (identifyResult.Candidates.Length == 0)
+                    {
+                        Console.WriteLine("No one identified");
+                    }
+                    else
+                    {
+                        return identifyResult.Candidates[0].PersonId;
+                    }
+                }
+            }
+            return Guid.Empty;
         }
 
         public async Task<Boolean> verificationFace(String verifyImagePath, Guid personGuid, String groupId)
@@ -135,6 +160,7 @@ namespace FileLockWPF
 
         private async Task trainNetwork(String groupId)
         {
+            await faceServiceClient.TrainPersonGroupAsync(groupId);
             TrainingStatus trainingStatus = null;
             while (true)
             {

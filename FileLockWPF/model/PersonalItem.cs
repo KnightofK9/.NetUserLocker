@@ -19,7 +19,7 @@ namespace FileLockWPF
             personalItem.personGroupId = Constant.GROUP_ID;
             personalItem.name = name;
             personalItem.imagePaths = imagePaths;
-            personalItem.guid = System.Guid.NewGuid();
+//            personalItem.guid = System.Guid.NewGuid();
             return personalItem;
         }
     }

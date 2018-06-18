@@ -63,7 +63,7 @@ namespace FileLockWPF
             }
         }
 
-        private void btnAddPerson_Click(object sender, RoutedEventArgs e)
+        private async void btnAddPerson_Click(object sender, RoutedEventArgs e)
         {
             String personeName = PersonName.Text;
             if (personeName.Trim() == "")
@@ -72,7 +72,7 @@ namespace FileLockWPF
                 return;
             }
             List<String> imagePaths = GetImagePaths();
-            var result = this.faceLockService.intPersonalItemOnServiceAsync(personeName, imagePaths).Result;
+            var result = await faceLockService.intPersonalItemOnServiceAsync(personeName, imagePaths);
             if (result != null)
             {
                 showMessageBox("Create person success!", "Person id " + result.PersonId);
@@ -98,7 +98,7 @@ namespace FileLockWPF
         private void showMessageBox(String title, String caption)
         {
             MessageBoxResult result = MessageBox.Show(caption,
-                caption,
+                title,
                 MessageBoxButton.OK,
                 MessageBoxImage.Question);
             if (result == MessageBoxResult.OK)
@@ -107,7 +107,7 @@ namespace FileLockWPF
             }
         }
 
-        private void btnDecryptFile_Click(object sender, RoutedEventArgs e)
+        private async void btnDecryptFile_Click(object sender, RoutedEventArgs e)
         {
             var imagePaths = GetImagePaths();
             if (imagePaths.Count == 0)
@@ -121,7 +121,7 @@ namespace FileLockWPF
             if (openFileDialog.ShowDialog() == true)
             {
                 String filePath = openFileDialog.FileName;
-                if (faceLockService.DecryptFile(image, filePath).Result)
+                if (await faceLockService.DecryptFile(image, filePath))
                 {
                     showMessageBox("Sucess", "File Decrypted!");
                 }
@@ -154,10 +154,9 @@ namespace FileLockWPF
             return;
         }
 
-        private void btnVerifyPerson_Click(object sender, RoutedEventArgs e)
+        private async void btnVerifyPerson_Click(object sender, RoutedEventArgs e)
         {
             List<String> imagePaths = GetImagePaths();
-            Guid guid = currentGuid;
             if (imagePaths.Count == 0)
             {
                 showMessageBox("Error", "You must add some image for verification!");
@@ -165,13 +164,15 @@ namespace FileLockWPF
             }
             foreach (var imagePath in imagePaths)
             {
-                if (!this.faceLockService.verificationFace(imagePath, guid, Constant.GROUP_ID).Result)
+                Guid guid = await this.faceLockService.detectPerson(imagePath, Constant.GROUP_ID);
+                if (guid != Guid.Empty)
                 {
-                    showMessageBox("Error", "Face not match for image " + imagePath);
+                    SetGuid(guid);
+                    showMessageBox("Sucess", "Guid "+ guid.ToString());
                     return;
                 }
             }
-            showMessageBox("Success", "All face match!");
+            showMessageBox("Failed", "No face match!");
         }
     }
 }
